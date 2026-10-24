@@ -1,0 +1,10 @@
+= 2026-10-23
+:hide-page:
+:navtree-parent: changelog.adoc
+:description: link-registry v0.1.1 extension fixes.
+
+== v0.1.1 extension fixes
+
+`register` declared a default parameter, which made its `length` 0. Antora then called it as `register(context, { config, playbook })`, so the extension never saw `registry` and injected nothing. It now takes exactly one parameter, and a test pins `register.length` to 1.
+
+Building the antora-supplemental hub showed the second issue: `url-facto-stack`, defined in the link-registry component's `antora.yml`, raised warnings on hub pages that never defined it. Warnings now check each page against its own component version's attributes plus the shared registry files and playbook attributes. The JSON index still lists every registered name.

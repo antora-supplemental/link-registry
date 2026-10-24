@@ -58,6 +58,19 @@ describe('extension', () => {
     assert.ok(idx.links.some((l) => l.name === 'url-playbook-only'))
     assert.ok(idx.unusedNames.includes('url-asciidoc-attrs'))
   })
+  it('has arity 1 so Antora passes { config, playbook } with this = context', () => {
+    assert.strictEqual(register.length, 1)
+  })
+  it('scopes antora.yml attributes to their own component version', () => {
+    const { handlers, logs } = harness({})
+    const a = { version: '', asciidoc: { attributes: { 'url-only-a': 'https://a.example.org/page' } } }
+    const b = { version: '', asciidoc: { attributes: {} } }
+    const pg = (component) => ({ ...page('p.adoc', 'See https://a.example.org/page here.'), src: { ...page('p.adoc', '').src, component } })
+    handlers.contentClassified({ contentCatalog: { getComponents: () => [{ name: 'a', versions: [a] }, { name: 'b', versions: [b] }], findBy: () => [pg('a'), pg('b')] } })
+    const warns = logs.filter(([l]) => l === 'warn').map(([, m]) => m)
+    assert.strictEqual(warns.length, 1)
+    assert.match(warns[0], /^a::p\.adoc:1/)
+  })
   it('index: false skips the JSON file', () => {
     const { handlers } = harness({ index: false })
     const files = []

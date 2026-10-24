@@ -26,7 +26,7 @@ Write every shared outside link once, as `+:url-stripe-billing: https://...+`, a
 
 [source,bash]
 ----
-pnpm add -D github:antora-supplemental/link-registry#v0.1.0
+pnpm add -D github:antora-supplemental/link-registry#v0.1.1
 ----
 
 [source,yaml]

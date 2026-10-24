@@ -14,7 +14,7 @@ image::link-registry-pipeline.svg[alt="Push or PR runs the links job first; buil
 
 [source,bash]
 ----
-pnpm add -D github:antora-supplemental/link-registry#v0.1.0
+pnpm add -D github:antora-supplemental/link-registry#v0.1.1
 ----
 
 == 2. Register links

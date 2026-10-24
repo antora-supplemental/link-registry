@@ -1,6 +1,6 @@
 {
   "name": "@antora-supplemental/link-registry",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Named link registry for AsciiDoc/Antora: register URLs as memorable {url-*} attributes, reject literal copies in CI with teaching messages, fix them locally, and index which pages use which link",
   "license": "MIT",
   "author": "Ryan Johnson (https://github.com/AMDphreak)",

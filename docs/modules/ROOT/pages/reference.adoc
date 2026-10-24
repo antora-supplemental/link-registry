@@ -124,7 +124,7 @@ antora:
 |`index_path` |`_/link-registry/index.json` |Where the index is published.
 |===
 
-Registry attributes in `antora.yml` or the playbook need no `registry` option: AsciiDoc already applies them, and the extension reads them from the component versions.
+Registry attributes in `antora.yml` or the playbook need no `registry` option: AsciiDoc already applies them, and the extension reads them from the component versions. Attributes from a component's `antora.yml` count only for that component's pages; `registry` files and playbook attributes count for every page.
 
 === Outbound link index
 

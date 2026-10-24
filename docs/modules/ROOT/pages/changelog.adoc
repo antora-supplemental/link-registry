@@ -4,6 +4,12 @@
 
 == 2026-10-23
 
+=== v0.1.1 extension fixes
+
+* The Antora extension now receives its `registry` option (Antora passes `{ config, playbook }` only to a one-argument `register`).
+* Literal warnings use each component version's own registry, so a name defined in one component's `antora.yml` no longer flags pages in other components.
+* xref:changelog-details/2026-10-23 - extension fixes.adoc[Details]
+
 === v0.1.0 initial release
 
 * `link-registry` CLI: `check`, `fix`, `suggest`, `list`, `hook install`; teaching error messages and GitHub Actions annotations.
