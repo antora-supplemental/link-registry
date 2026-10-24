@@ -1,0 +1,153 @@
+= Link registry reference
+:page-audience: Docs author
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-last-author: Grok Bot on behalf of Ryan Johnson
+:page-last-edited: 2026-10-23
+:page-keywords: link-registry cli, action, extension options
+:description: Every command, option, input, and output of link-registry: the CLI, package.json config, the GitHub Action, the reusable workflow, and the Antora extension.
+
+image::link-registry-pipeline.svg[alt="links job gates build and deploy",width=760]
+
+== CLI
+
+`link-registry <command> [paths...] [options]`. Exit codes: `0` clean, `1` registered literals found (or near misses with `--strict`), `2` configuration error such as a missing registry file.
+
+[cols="1,3"]
+|===
+|Command |What it does
+
+|`check` |Fail when a `.adoc` file writes a registered URL literally. Near misses print warnings.
+|`fix` |Rewrite those literals to `+{name}+` and append each change to the change log.
+|`suggest` |List unregistered URLs used `--min` times or more, with proposed names. `--write <file>` appends them as attributes.
+|`list` |Print the loaded registry.
+|`hook install` |Write a `pre-commit` hook that runs `check --staged`. Skipped in CI; never overwrites an existing hook.
+|===
+
+[cols="1,3"]
+|===
+|Option |Meaning
+
+|`--registry <file>` |Registry file: `.adoc` attribute entries, or an Antora `.yml` with `asciidoc.attributes`. Repeatable. Default: the first that exist of `docs/link-registry.adoc`, `antora-playbook.yml`, `docs/antora.yml`.
+|`--root <dir>` |Folder to scan. Repeatable. Default `docs` if present, else `.`.
+|`--prefix <p>` |Only attributes whose name starts with `<p>` count as links. Default `url-`; `""` means every URL-valued attribute.
+|`--changes <file>` |Change log written by `fix`. Default `docs/link-registry-changes.adoc`.
+|`--staged` |Scan only staged `.adoc` files.
+|`--include-blocks` |Also scan listing, literal, and passthrough blocks (skipped by default because examples often show URLs on purpose).
+|`--strict` |Near-miss warnings fail the check.
+|`--fix-cmd <cmd>` |Command named in error messages. Default `pnpm links:fix`.
+|`--json` |Machine-readable output.
+|`--verbose` |List the scanned files and the registry.
+|===
+
+=== What counts as the same link
+
+A literal matches a registered link when host (ignoring `www.`), path (ignoring a trailing slash), and query are equal; the scheme does not matter. A literal with a `#fragment` on a registered page is also an error, and `fix` writes `+{name}#fragment+`. A near miss (same host and a path within two edits or 15%, or the same path on a host within two edits) is a warning.
+
+=== What the scanner skips
+
+* Attribute entries (the registry itself) and the configured change log.
+* `//` comments, comment blocks, listing, literal, and passthrough blocks.
+* Escaped URLs (`+\https://...+`).
+* The line after a `// link-registry: ignore-next-line` (or `// link-registry: ignore`) comment line.
+
+=== Configuration in package.json
+
+Every option has a `linkRegistry` key; CLI flags override it.
+
+[source,json]
+----
+"linkRegistry": {
+  "registry": ["docs/antora.yml"],
+  "roots": ["docs"],
+  "prefix": "url-",
+  "changes": "docs/link-registry-changes.adoc",
+  "includeBlocks": false,
+  "strict": false
+}
+----
+
+=== GitHub Actions output
+
+When `GITHUB_ACTIONS=true`, each hit is printed as an {url-gha-annotations}[annotation] (`::error file=...,line=...,col=...`), and near misses as `::warning`, so they appear on the changed line in the pull request.
+
+== Composite action
+
+`uses: antora-supplemental/link-registry@v0`. Needs a checkout and Node (present on GitHub-hosted runners). No install step.
+
+[cols="1,1,3"]
+|===
+|Input |Default |Meaning
+
+|`args` |`""` |Extra CLI arguments for `check`.
+|`working-directory` |`.` |Folder that holds the docs.
+|`fix-command` |`pnpm links:fix` |Command named in error messages.
+|===
+
+== Reusable workflow
+
+`uses: antora-supplemental/link-registry/.github/workflows/check.yml@v0` as a job. Shallow, sparse checkout plus the action. Put build jobs behind it with `needs:`.
+
+[cols="1,1,3"]
+|===
+|Input |Default |Meaning
+
+|`args` |`""` |Extra CLI arguments for `check`.
+|`working-directory` |`.` |Folder that holds the docs.
+|`sparse-checkout` |`""` |Extra sparse-checkout patterns, one per line, for a registry file outside the defaults.
+|`fix-command` |`pnpm links:fix` |Command named in error messages.
+|===
+
+Default sparse patterns: `*.adoc`, `antora.yml`, `antora-playbook*.yml`, `/package.json`.
+
+== Antora extension
+
+Register it in the playbook, or turn it on through facto-stack's `linkRegistry` pack key ({url-facto-stack}[facto-stack]).
+
+[source,yaml]
+----
+antora:
+  extensions:
+    - require: '@antora-supplemental/link-registry'
+      registry: ./docs/link-registry.adoc
+      warn_literals: true
+      index: true
+----
+
+[cols="1,1,3"]
+|===
+|Option |Default |Meaning
+
+|`registry` |none |`.adoc` attributes file(s) relative to the playbook. Its attributes are added to every component version without replacing attributes the component already sets.
+|`prefix` |`url-` |As for the CLI.
+|`warn_literals` |`true` |Log a warning for each literal use of a registered link.
+|`index` |`true` |Write the outbound link index.
+|`index_path` |`_/link-registry/index.json` |Where the index is published.
+|===
+
+Registry attributes in `antora.yml` or the playbook need no `registry` option: AsciiDoc already applies them, and the extension reads them from the component versions.
+
+=== Outbound link index
+
+[source,json]
+----
+{
+  "generator": "@antora-supplemental/link-registry",
+  "version": "0.1.0",
+  "registry": { "url-stripe-billing": "https://stripe.com/docs/billing" },
+  "unusedNames": ["url-old-page"],
+  "links": [
+    {
+      "url": "https://stripe.com/docs/billing",
+      "name": "url-stripe-billing",
+      "uses": 4,
+      "pages": ["fixture::billing.adoc", "fixture::index.adoc"]
+    }
+  ]
+}
+----
+
+ifndef::page-context-active[]
+'''
+Authors: {page-orig-author} +
+Last updated: {page-last-edited}
+endif::[]

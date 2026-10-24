@@ -1,0 +1,22 @@
+# Allow-list: ignore everything, then re-include tracked paths.
+*
+!.gitignore
+!.gitattributes
+!.editorconfig
+!.github/
+!.github/**
+!bin/
+!bin/**
+!lib/
+!lib/**
+!test/
+!test/**
+!docs/
+!docs/**
+!action.yml
+!package.json
+!pnpm-lock.yaml
+!README.adoc
+!LICENSE
+!antora-registry.md
+!AGENTS.md

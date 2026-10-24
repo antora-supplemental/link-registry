@@ -1,0 +1,4 @@
+* xref:set-up.adoc[Set up a link registry]
+* xref:reference.adoc[Link registry reference]
+* xref:future-ideas.adoc[Future ideas]
+* xref:changelog.adoc[Changelog]

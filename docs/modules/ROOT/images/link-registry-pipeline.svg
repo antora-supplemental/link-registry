@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" role="img" aria-labelledby="t d">
+  <title id="t">link-registry CI pipeline</title>
+  <desc id="d">Every push and pull request runs the fast link-registry scan first. Build and deploy jobs need it, so a failing scan stops them from starting.</desc>
+  <style>
+    .box { fill: #f5f7fa; stroke: #2d3a4a; stroke-width: 1.5; }
+    .gate { fill: #fff4e5; stroke: #b85c00; stroke-width: 2; }
+    .stop { fill: #fdecec; stroke: #b3261e; stroke-width: 1.5; }
+    text { font: 14px system-ui, -apple-system, Segoe UI, sans-serif; fill: #1b2430; }
+    .small { font-size: 12px; fill: #4a5563; }
+    .arrow { stroke: #2d3a4a; stroke-width: 1.5; fill: none; marker-end: url(#a); }
+    .fail { stroke: #b3261e; stroke-dasharray: 5 4; }
+    @media (prefers-color-scheme: dark) {
+      .box { fill: #1e2630; stroke: #9fb0c3; }
+      .gate { fill: #3a2a12; stroke: #f0a050; }
+      .stop { fill: #3a1a1a; stroke: #f28b82; }
+      text { fill: #e6edf3; } .small { fill: #a9b4c0; }
+      .arrow { stroke: #9fb0c3; } .fail { stroke: #f28b82; }
+      #a path { fill: #9fb0c3; }
+    }
+  </style>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2d3a4a"/></marker></defs>
+  <rect class="box" x="10" y="40" width="130" height="60" rx="4"/>
+  <text x="75" y="66" text-anchor="middle">push / PR</text>
+  <text class="small" x="75" y="84" text-anchor="middle">any branch</text>
+  <path class="arrow" d="M140 70H190"/>
+  <rect class="gate" x="190" y="30" width="170" height="80" rx="4"/>
+  <text x="275" y="58" text-anchor="middle">links job</text>
+  <text class="small" x="275" y="76" text-anchor="middle">sparse checkout, no install</text>
+  <text class="small" x="275" y="92" text-anchor="middle">seconds</text>
+  <path class="arrow" d="M360 70H410"/>
+  <text class="small" x="385" y="60" text-anchor="middle">ok</text>
+  <rect class="box" x="410" y="40" width="150" height="60" rx="4"/>
+  <text x="485" y="66" text-anchor="middle">build</text>
+  <text class="small" x="485" y="84" text-anchor="middle">needs: links</text>
+  <path class="arrow" d="M560 70H610"/>
+  <rect class="box" x="610" y="40" width="140" height="60" rx="4"/>
+  <text x="680" y="66" text-anchor="middle">deploy</text>
+  <text class="small" x="680" y="84" text-anchor="middle">needs: build</text>
+  <path class="arrow fail" d="M275 110V150"/>
+  <rect class="stop" x="160" y="150" width="230" height="50" rx="4"/>
+  <text x="275" y="172" text-anchor="middle">fail: ::error annotations</text>
+  <text class="small" x="275" y="189" text-anchor="middle">build and deploy never start</text>
+</svg>

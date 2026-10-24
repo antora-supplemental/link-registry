@@ -1,0 +1,59 @@
+= Link Registry
+:page-audience: Docs author
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-last-author: Grok Bot on behalf of Ryan Johnson
+:page-last-edited: 2026-10-23
+:page-keywords: links, asciidoc attributes, ci, antora
+:description: Register each external link once under a memorable AsciiDoc attribute name, and let CI reject literal copies with a message that teaches the name.
+
+Docs that link to the same outside page from twenty places break in twenty places when that page moves. Link Registry gives every shared link one memorable name, such as `+{url-stripe-billing}+`, keeps the URL in one attributes file, and rejects any commit that writes the URL out by hand again. The rejection message tells the author which name to use, so the registry teaches itself.
+
+image::link-registry-pipeline.svg[alt="Push or PR runs the links job first; build and deploy need it, so a failing scan stops them",width=760]
+
+== How it works
+
+. **Register.** Each link is an AsciiDoc attribute with a descriptive name, kept in one place: `docs/antora.yml` (`asciidoc.attributes`), the playbook's `asciidoc.attributes`, or a shared `.adoc` attributes file.
++
+[source,yaml]
+----
+asciidoc:
+  attributes:
+    url-stripe-billing: https://stripe.com/docs/billing
+----
+. **Write.** Authors type `+{url-stripe-billing}[Stripe Billing]+`. AsciiDoc substitutes the attribute before it builds the link, so the published HTML contains the real URL and hovering the link shows the real target. Nothing redirects.
+. **Check.** A fast scanner (`link-registry check`, run as `pnpm links:check`) reads every `.adoc` file and fails when a literal URL is the same link as a registered one. It ignores the difference between http and https, a trailing slash, and a `#fragment` added to a registered page. Near misses (a one-letter typo in the path, a misspelled host) come out as warnings.
+. **Fix.** `pnpm links:fix` rewrites the literals to their names and records each rewrite in `docs/link-registry-changes.adoc`, separate from the project changelog.
+. **Index.** The optional Antora extension writes `_/link-registry/index.json`: every outbound URL, its registered name, and the pages that link to it.
+
+== Why memorable names
+
+A name like `url-stripe-billing` reads as what it points to. Authors remember it after seeing it once in an error message, and reviewers can tell from the source whether the right page is linked. Opaque keys (`link-17`) or short links hide the target and turn every review into a lookup.
+
+== Why CI rejects instead of auto-fixing
+
+CI fails the push and prints the fix; it never rewrites your branch by default.
+
+* **The author learns the name.** An automatic rewrite hides the registry from the person who most needs to know it exists. A failing check with a teaching message makes the next page right the first time.
+* **Commits stay the author's.** A bot commit on every push muddies history and races with the author's next push.
+* **A literal can be intentional.** A page that explains an old URL, or quotes a link on purpose, should say so (`// link-registry: ignore-next-line`) rather than be silently rewritten.
+* **It is cheap.** The scan reads text files only. It runs before the Antora build and deploy, so a rejected push costs seconds, not a full site build.
+
+== The CI gate runs first
+
+The scan is its own job that runs on **every push to every branch, `main` included, and on every pull request**. Build and deploy jobs declare `needs:` on it, so when the scan fails the expensive Antora build and the Pages deploy never start. The job uses a sparse, shallow checkout (only `.adoc` files and attribute/config files) and no `pnpm install`: the scanner has no dependencies and runs on the runner's Node. Each hit becomes a GitHub Actions `::error file=...,line=...` annotation on the exact line. See xref:set-up.adoc#ci[Set up a link registry: CI].
+
+== Local hook, with an escape hatch
+
+An optional pre-commit hook runs `link-registry check --staged` so authors hear about a literal before they push. `git commit --no-verify` skips it when you need to commit work in progress; CI remains the gate.
+
+== Where it sits among the link tools
+
+* {url-link-validator}[link-validator] checks at build time whether outbound links still work.
+* {url-linkinator}[Linkinator] shows link health in the browser, on click.
+* **Link Registry** keeps the links themselves in one named place. Its JSON index answers "which pages contain this link?", which a future Linkinator button can use (see xref:future-ideas.adoc[Future ideas]).
+
+ifndef::page-context-active[]
+'''
+Authors: {page-orig-author} +
+Last updated: {page-last-edited}
+endif::[]

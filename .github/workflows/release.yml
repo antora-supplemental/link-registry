@@ -1,0 +1,67 @@
+name: Release
+
+# Distribution: github:antora-supplemental/link-registry#vX.Y.Z (npm package via git pin)
+# and `uses: antora-supplemental/link-registry@v0` (Action). Pushing tag vX.Y.Z creates the
+# GitHub Release and moves the rolling major tag (v0) to the same commit.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semver X.Y.Z to release (tag vX.Y.Z must exist on the remote)
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - run: pnpm install
+      - run: pnpm test
+
+      - name: Verify version matches tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          test "$PACKAGE_VERSION" = "${RELEASE_TAG#v}"
+
+      - name: Move rolling major tag
+        run: |
+          MAJOR="${RELEASE_TAG%%.*}"
+          git tag -f "$MAJOR" "$RELEASE_TAG^{commit}"
+          git push -f origin "refs/tags/$MAJOR"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          NOTES="Release v$VERSION"
+          LOG=docs/modules/ROOT/pages/changelog.adoc
+          if [ -f "$LOG" ]; then
+            EXTRACTED=$(awk -v v="v$VERSION" '
+              /^=== / && index($0, v) {flag=1; next}
+              flag && /^==/ {exit}
+              flag {print}' "$LOG")
+            if [ -n "$EXTRACTED" ]; then NOTES="$EXTRACTED"; fi
+          fi
+          gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes "$NOTES" || true

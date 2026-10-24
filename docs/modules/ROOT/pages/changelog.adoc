@@ -1,0 +1,12 @@
+= Changelog
+:description: Changes to link-registry, newest first.
+:page-audience: Docs author
+
+== 2026-10-23
+
+=== v0.1.0 initial release
+
+* `link-registry` CLI: `check`, `fix`, `suggest`, `list`, `hook install`; teaching error messages and GitHub Actions annotations.
+* Composite action and reusable workflow with a sparse, install-free first job that gates build and deploy through `needs:`.
+* Antora extension: registry injection, literal warnings, and the `_/link-registry/index.json` outbound link index.
+* xref:changelog-details/2026-10-23 - initial release.adoc[Details]

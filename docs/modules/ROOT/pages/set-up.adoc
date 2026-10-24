@@ -1,0 +1,134 @@
+= Set up a link registry
+:page-audience: Docs author
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-last-author: Grok Bot on behalf of Ryan Johnson
+:page-last-edited: 2026-10-23
+:page-usage-context: Docs repository with a package.json and GitHub Actions
+:description: Add a link registry to an AsciiDoc or Antora docs repo: register links, add the scripts, gate CI, and optionally install the local hook.
+
+You maintain a docs repo and want each shared outside link written once, under a name, with CI catching copies. This page takes you from nothing to a gated pipeline in five steps.
+
+image::link-registry-pipeline.svg[alt="Push or PR runs the links job first; build and deploy need it",width=760]
+
+== 1. Install
+
+[source,bash]
+----
+pnpm add -D github:antora-supplemental/link-registry#v0.1.0
+----
+
+== 2. Register links
+
+Pick one home for the registry. In a multi-repo Antora hub, the component's `docs/antora.yml` is the safest choice because the attributes travel with the component:
+
+[source,yaml]
+----
+asciidoc:
+  attributes:
+    url-stripe-billing: https://stripe.com/docs/billing
+    url-antora-docs: https://docs.antora.org/antora/latest/
+----
+
+A shared `.adoc` attributes file works too (`docs/link-registry.adoc`, lines like `:url-stripe-billing: https://...`); register the Antora extension with `registry: ./docs/link-registry.adoc` so every page sees the names. The playbook's `asciidoc.attributes` is the third option for single-repo sites.
+
+Names start with `url-` (change with `prefix`) and say what the page is: `url-stripe-billing`, not `url-1`.
+
+Already have repeated links? Let the tool propose names:
+
+[source,bash]
+----
+pnpm exec link-registry suggest --min 2 --write docs/link-registry.adoc
+----
+
+Rename the proposals to something memorable, then run `pnpm links:fix`.
+
+== 3. Add the scripts
+
+[source,json]
+----
+{
+  "scripts": {
+    "links:check": "link-registry check",
+    "links:fix": "link-registry fix",
+    "prepare": "link-registry hook install"
+  },
+  "linkRegistry": {
+    "registry": ["docs/antora.yml"],
+    "roots": ["docs"]
+  }
+}
+----
+
+[#ci]
+== 4. Gate CI
+
+Run the scan as its **own first job** on every push (all branches, `main` included) and every pull request, and make the build depend on it. A failing scan then stops the Antora build and the Pages deploy before they start.
+
+[source,yaml]
+----
+on:
+  push:
+  pull_request:
+
+jobs:
+  links:
+    uses: antora-supplemental/link-registry/.github/workflows/check.yml@v0
+
+  build:
+    needs: links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # ... pnpm install, antora build, upload Pages artifact
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # ...
+----
+
+The reusable workflow does a shallow, sparse checkout (`*.adoc`, `antora.yml`, `antora-playbook*.yml`, `package.json`) and runs the scanner with the runner's Node. There is no `pnpm install`, so the job finishes in seconds. Registry somewhere else? Pass `sparse-checkout: path/to/links.adoc` and `args: --registry path/to/links.adoc`.
+
+Already have a checkout in a job? Use the composite action as a step instead:
+
+[source,yaml]
+----
+      - uses: antora-supplemental/link-registry@v0
+        with:
+          args: --registry docs/antora.yml
+----
+
+CI never runs `fix`. It fails and tells the author what to type.
+
+== 5. Optional local hook
+
+`link-registry hook install` (run by the `prepare` script above) writes a `pre-commit` hook that checks staged `.adoc` files. It refuses to overwrite an existing hook, and it leaves a `core.hooksPath` outside the repo alone. In that case, or if you already use {url-lefthook}[lefthook], add the command there:
+
+[source,yaml]
+----
+# lefthook.yml
+pre-commit:
+  commands:
+    links:
+      glob: "*.adoc"
+      run: pnpm exec link-registry check --staged
+----
+
+Need to commit anyway? `git commit --no-verify` skips the hook. CI still checks the push.
+
+== Fixing a rejected push
+
+The failure names the file, line, and attribute:
+
+[source,text]
+----
+error: docs/modules/ROOT/pages/billing.adoc:3 uses the literal https://stripe.com/docs/billing which is registered as {url-stripe-billing}. Write {url-stripe-billing}[...] instead, or run `pnpm links:fix`.
+----
+
+Either edit the line or run `pnpm links:fix`, review the diff (and the new lines in `docs/link-registry-changes.adoc`), and push again. If the literal is deliberate, put `// link-registry: ignore-next-line` on the line above it.
+
+ifndef::page-context-active[]
+'''
+Authors: {page-orig-author} +
+Last updated: {page-last-edited}
+endif::[]

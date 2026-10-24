@@ -1,0 +1,3 @@
+= Fixture
+
+Clean page: read {url-antora-docs}[the Antora docs] and {url-stripe-billing}[Stripe Billing].

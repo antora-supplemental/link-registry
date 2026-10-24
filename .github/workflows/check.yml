@@ -1,0 +1,55 @@
+# Reusable workflow: the fast link-registry scan as its own first job.
+# Callers make their build / deploy jobs `needs:` this job so a failing scan stops the
+# Antora build and Pages deploy from starting:
+#
+#   jobs:
+#     links:
+#       uses: antora-supplemental/link-registry/.github/workflows/check.yml@v0
+#     build:
+#       needs: links
+#       ...
+name: link-registry check (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      args:
+        description: Extra CLI arguments (e.g. `--registry docs/link-registry.adoc --strict`)
+        type: string
+        default: ""
+      working-directory:
+        type: string
+        default: "."
+      sparse-checkout:
+        description: Extra sparse-checkout patterns (newline separated) when the registry lives elsewhere
+        type: string
+        default: ""
+      fix-command:
+        type: string
+        default: pnpm links:fix
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: link-registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Sparse, shallow checkout: only AsciiDoc sources and attribute/config files. No pnpm install.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            *.adoc
+            antora.yml
+            antora-playbook*.yml
+            /package.json
+            ${{ inputs.sparse-checkout }}
+      - uses: antora-supplemental/link-registry@v0
+        with:
+          args: ${{ inputs.args }}
+          working-directory: ${{ inputs.working-directory }}
+          fix-command: ${{ inputs.fix-command }}

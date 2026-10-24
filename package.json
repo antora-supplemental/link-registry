@@ -1,0 +1,63 @@
+{
+  "name": "@antora-supplemental/link-registry",
+  "version": "0.1.0",
+  "description": "Named link registry for AsciiDoc/Antora: register URLs as memorable {url-*} attributes, reject literal copies in CI with teaching messages, fix them locally, and index which pages use which link",
+  "license": "MIT",
+  "author": "Ryan Johnson (https://github.com/AMDphreak)",
+  "main": "lib/index.js",
+  "bin": {
+    "link-registry": "bin/link-registry.js"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin/**/*",
+    "lib/**/*",
+    "action.yml",
+    "README.adoc",
+    "LICENSE",
+    "antora-registry.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "links:check": "node bin/link-registry.js check",
+    "build:fixture": "antora test/fixture/antora-playbook.yml --to-dir build/fixture"
+  },
+  "linkRegistry": {
+    "registry": "docs/antora.yml",
+    "roots": ["docs"]
+  },
+  "keywords": [
+    "antora",
+    "antora-extension",
+    "asciidoc",
+    "links",
+    "link-registry",
+    "github-action"
+  ],
+  "homepage": "https://github.com/antora-supplemental/link-registry",
+  "bugs": {
+    "url": "https://github.com/antora-supplemental/link-registry/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antora-supplemental/link-registry.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "@antora/site-generator": ">=3.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@antora/site-generator": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "antora": "^3.1.14"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

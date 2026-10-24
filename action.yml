@@ -1,0 +1,33 @@
+name: link-registry check
+description: Fail fast when AsciiDoc sources write a registered link as a literal URL (teaching annotations per hit). No install step; runs with the runner's Node.
+author: antora-supplemental
+branding:
+  icon: link
+  color: blue
+
+inputs:
+  args:
+    description: Extra CLI arguments, e.g. `--registry docs/link-registry.adoc --root docs --strict`
+    required: false
+    default: ""
+  working-directory:
+    description: Folder that holds package.json / the docs tree
+    required: false
+    default: "."
+  fix-command:
+    description: Command named in the teaching messages
+    required: false
+    default: pnpm links:fix
+
+runs:
+  using: composite
+  steps:
+    - name: link-registry check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        LR_ARGS: ${{ inputs.args }}
+        LR_FIX: ${{ inputs.fix-command }}
+      run: |
+        # shellcheck disable=SC2086
+        node "$GITHUB_ACTION_PATH/bin/link-registry.js" check $LR_ARGS --fix-cmd "$LR_FIX"

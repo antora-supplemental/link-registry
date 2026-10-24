@@ -1,0 +1,8 @@
+= 2026-10-23
+:hide-page:
+:navtree-parent: changelog.adoc
+:description: link-registry v0.1.0 initial release details.
+
+== v0.1.0 initial release
+
+First release. Links live once as `url-` AsciiDoc attributes; a dependency-free scanner rejects literal copies (scheme, trailing slash, and fragment differences included) and warns on near misses. `fix` rewrites literals and logs each rewrite to `docs/link-registry-changes.adoc`. CI runs the scan as its own first job on every push and pull request, so a failing scan stops the Antora build and Pages deploy from starting. The optional Antora extension warns on literals and publishes a JSON index of every outbound link and the pages that use it.

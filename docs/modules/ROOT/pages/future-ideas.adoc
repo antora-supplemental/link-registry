@@ -1,0 +1,31 @@
+= Future ideas
+:page-audience: Docs author
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-last-author: Grok Bot on behalf of Ryan Johnson
+:page-last-edited: 2026-10-23
+:page-keywords: link-registry roadmap
+:description: Design notes, not yet built: grouped CI reports to spot domain moves, and Linkinator in-page translation.
+
+These are design notes for later versions. Nothing on this page ships in v0.1.
+
+== Grouped failure report by domain
+
+When a whole site moves (`docs.example.com` becomes `example.com/docs`), link-validator reports dozens of separate dead links. Grouping the failures by registered name and host makes the pattern obvious without any AI:
+
+* Group failing URLs by host and by shared path prefix.
+* If most registered links on one host fail with redirects to one new host or prefix, report it as a probable domain move: "14 of 15 links on docs.example.com redirect to example.com/docs/...".
+* Because each link lives once in the registry, the fix is one edit per name, or one search-and-replace in the registry file. Pages do not change.
+
+== Linkinator in-page translation
+
+The JSON index (`_/link-registry/index.json`) already maps each outbound URL to its registered name and the pages that use it. A Linkinator button could use it to:
+
+* show "registered as `+{url-...}+`, used on 7 pages" when a reader or author hovers a link;
+* list those pages, so an author who finds a dead link sees every page it affects;
+* translate a pasted literal URL into the attribute to write.
+
+ifndef::page-context-active[]
+'''
+Authors: {page-orig-author} +
+Last updated: {page-last-edited}
+endif::[]

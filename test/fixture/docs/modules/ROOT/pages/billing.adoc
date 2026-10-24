@@ -1,0 +1,23 @@
+= Billing
+
+See https://stripe.com/docs/billing[Stripe Billing] for plans.
+
+Same page over http with a slash: http://stripe.com/docs/billing/.
+
+Deep link: https://docs.antora.org/antora/latest/#install[install Antora].
+
+Typo: https://stripe.com/docs/biling[billing docs].
+
+Unregistered: https://example.org/elsewhere[elsewhere].
+
+// https://stripe.com/docs/billing in a comment is ignored
+
+\https://stripe.com/docs/billing escaped is ignored.
+
+// link-registry: ignore-next-line
+Intentional literal: https://stripe.com/docs/billing
+
+[source,text]
+----
+https://stripe.com/docs/billing inside a listing is ignored
+----

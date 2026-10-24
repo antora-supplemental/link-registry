@@ -1,0 +1,4 @@
+// Link registry for the fixture component. One memorable name per external link.
+:url-stripe-billing: https://stripe.com/docs/billing
+:url-antora-docs: https://docs.antora.org/antora/latest/
+:url-asciidoc-attrs: https://docs.asciidoctor.org/asciidoc/latest/attributes/document-attributes/

@@ -1,0 +1,65 @@
+= Link Registry
+:description: Register each external link once as a named AsciiDoc attribute; CI rejects literal copies with a message that teaches the name.
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-last-edited: 2026-10-23
+:url-docs: https://antora-supplemental.github.io/docs/link-registry/index.html
+:url-changelog: https://antora-supplemental.github.io/docs/link-registry/changelog.html
+
+image:https://github.com/antora-supplemental/link-registry/actions/workflows/ci.yml/badge.svg[CI,link=https://github.com/antora-supplemental/link-registry/actions/workflows/ci.yml]
+image:https://img.shields.io/github/v/tag/antora-supplemental/link-registry?label=version[Version]
+image:https://img.shields.io/badge/license-MIT-blue[License: MIT]
+
+Write every shared outside link once, as `+:url-stripe-billing: https://...+`, and use `+{url-stripe-billing}[Stripe Billing]+` everywhere else. A fast scanner fails any push that writes a registered URL out by hand and tells the author which name to use.
+
+*{url-docs}[Explore the docs »]* · {url-changelog}[Changelog] · https://github.com/antora-supplemental/link-registry/issues[Report an issue]
+
+== What you get
+
+* `link-registry check`: exact matches (ignoring scheme, trailing slash, and an added `#fragment`) are errors; near misses are warnings. GitHub Actions annotations on the exact line.
+* `link-registry fix`: rewrites literals to names and logs each rewrite to `docs/link-registry-changes.adoc`. CI never runs it.
+* `link-registry suggest --min 2`: proposes names for URLs you already repeat.
+* A composite action and a reusable workflow: a sparse, install-free first job that build and deploy `needs:`.
+* An optional pre-commit hook (`git commit --no-verify` to skip).
+* An optional Antora extension: literal warnings plus `_/link-registry/index.json`, every outbound URL and the pages that use it.
+
+== Quick start
+
+[source,bash]
+----
+pnpm add -D github:antora-supplemental/link-registry#v0.1.0
+----
+
+[source,yaml]
+----
+# docs/antora.yml
+asciidoc:
+  attributes:
+    url-stripe-billing: https://stripe.com/docs/billing
+----
+
+[source,yaml]
+----
+# .github/workflows/build-and-deploy.yml
+on: [push, pull_request]
+jobs:
+  links:
+    uses: antora-supplemental/link-registry/.github/workflows/check.yml@v0
+  build:
+    needs: links
+    # ...
+----
+
+A failing push looks like this:
+
+[source,text]
+----
+error: docs/modules/ROOT/pages/billing.adoc:3 uses the literal https://stripe.com/docs/billing which is registered as {url-stripe-billing}. Write {url-stripe-billing}[...] instead, or run `pnpm links:fix`.
+----
+
+== Built with
+
+Node.js (no runtime dependencies) · Antora 3 extension API · GitHub Actions
+
+== License
+
+MIT. See link:LICENSE[LICENSE].

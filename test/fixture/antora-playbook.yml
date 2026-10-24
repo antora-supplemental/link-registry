@@ -1,0 +1,18 @@
+site:
+  title: Link registry fixture
+  start_page: fixture::index.adoc
+content:
+  sources:
+    - url: ./../..
+      branches: HEAD
+      start_path: test/fixture/docs
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+urls:
+  html_extension_style: indexify
+antora:
+  extensions:
+    - require: ./../../lib/index.js
+      registry: ./docs/link-registry.adoc

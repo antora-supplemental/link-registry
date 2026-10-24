@@ -1,0 +1,16 @@
+name: link-registry
+title: Link Registry
+version: ~
+nav:
+  - modules/ROOT/nav.adoc
+asciidoc:
+  attributes:
+    # Link registry for this component (link-registry checks these names).
+    url-repo: https://github.com/antora-supplemental/link-registry
+    url-repo-issues: https://github.com/antora-supplemental/link-registry/issues
+    url-linkinator: https://github.com/antora-supplemental/linkinator
+    url-link-validator: https://github.com/antora-supplemental/link-validator
+    url-facto-stack: https://github.com/antora-supplemental/facto-stack
+    url-lefthook: https://github.com/evilmartians/lefthook
+    url-asciidoc-attributes: https://docs.asciidoctor.org/asciidoc/latest/attributes/document-attributes/
+    url-gha-annotations: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands
