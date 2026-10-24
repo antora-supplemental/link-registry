@@ -14,6 +14,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             *.adoc
+            antora.yml
             /package.json
             /action.yml
             /bin/
